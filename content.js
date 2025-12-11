@@ -1,4 +1,5 @@
 // Track which PRs have already triggered confetti to avoid duplicates
+// Uses PR ID + latest commit hash to allow re-triggering on new pushes
 const triggeredPRs = new Set();
 
 // Get the current PR identifier
@@ -7,13 +8,68 @@ function getCurrentPRId() {
   return match ? `${match[1]}/pull/${match[2]}` : null;
 }
 
+// Get the latest commit hash from the PR page
+function getLatestCommitHash() {
+  // GitHub displays the latest commit hash in several places
+  // Try the timeline item for the latest commit
+  const timelineItems = document.querySelectorAll('.TimelineItem');
+  for (let i = timelineItems.length - 1; i >= 0; i--) {
+    const item = timelineItems[i];
+    const commitLink = item.querySelector('a.commit-id, a[href*="/commit/"]');
+    if (commitLink) {
+      const href = commitLink.getAttribute('href');
+      const match = href?.match(/\/commit\/([a-f0-9]+)/);
+      if (match) {
+        return match[1].substring(0, 7); // Use short hash
+      }
+    }
+  }
+  
+  // Fallback: Check for commit SHA in the branch info section
+  const branchInfo = document.querySelector('.gh-header-meta');
+  if (branchInfo) {
+    const commitLink = branchInfo.querySelector('a[href*="/commit/"], .commit-ref');
+    if (commitLink) {
+      const href = commitLink.getAttribute('href');
+      const match = href?.match(/\/commit\/([a-f0-9]+)/);
+      if (match) {
+        return match[1].substring(0, 7);
+      }
+    }
+  }
+  
+  // Another fallback: Look for the latest commit in the commits list
+  const commitId = document.querySelector('.commit-id');
+  if (commitId) {
+    const text = commitId.textContent.trim();
+    if (text.length >= 7) {
+      return text.substring(0, 7);
+    }
+  }
+  
+  return null;
+}
+
+// Get unique cache key for this PR + commit combination
+function getCacheKey() {
+  const prId = getCurrentPRId();
+  const commitHash = getLatestCommitHash();
+  
+  // If we can get both PR ID and commit hash, use both
+  // Otherwise, fall back to just PR ID (original behavior)
+  if (prId && commitHash) {
+    return `${prId}@${commitHash}`;
+  }
+  return prId;
+}
+
 // Check if CI checks have passed
 function checkCIStatus() {
-  const prId = getCurrentPRId();
-  if (!prId) return;
+  const cacheKey = getCacheKey();
+  if (!cacheKey) return;
 
-  // If we've already triggered confetti for this PR, don't do it again
-  if (triggeredPRs.has(prId)) return;
+  // If we've already triggered confetti for this PR+commit, don't do it again
+  if (triggeredPRs.has(cacheKey)) return;
 
   // Look for the merge status section on GitHub
   // GitHub shows CI status in different ways, we'll check for common patterns
@@ -25,7 +81,7 @@ function checkCIStatus() {
     if (text.includes('All checks have passed') || 
         text.includes('checks passed') ||
         text.includes('successful checks')) {
-      triggerConfetti(prId);
+      triggerConfetti(cacheKey);
       return;
     }
   }
@@ -41,7 +97,7 @@ function checkCIStatus() {
       // Make sure there are no failures
       const failureIcon = statusSection.querySelector('[data-targets="animated-image.replacedImage"][alt="Failure"]');
       if (!failureIcon) {
-        triggerConfetti(prId);
+        triggerConfetti(cacheKey);
         return;
       }
     }
@@ -53,7 +109,7 @@ function checkCIStatus() {
     const statusIcon = branchActionItem.querySelector('.octicon-check, .color-fg-success');
     const statusText = branchActionItem.textContent;
     if (statusIcon && (statusText.includes('success') || statusText.includes('passed'))) {
-      triggerConfetti(prId);
+      triggerConfetti(cacheKey);
       return;
     }
   }
@@ -65,7 +121,7 @@ function checkCIStatus() {
     if (stateClean) {
       const text = stateClean.textContent;
       if (text.includes('checks') && (text.includes('passed') || text.includes('successful'))) {
-        triggerConfetti(prId);
+        triggerConfetti(cacheKey);
         return;
       }
     }
@@ -73,16 +129,16 @@ function checkCIStatus() {
 }
 
 // Trigger Raycast confetti
-function triggerConfetti(prId) {
+function triggerConfetti(cacheKey) {
   console.log('🎉 CI checks passed! Triggering Raycast confetti...');
   
-  // Mark this PR as having triggered confetti
-  triggeredPRs.add(prId);
+  // Mark this PR+commit as having triggered confetti
+  triggeredPRs.add(cacheKey);
   
   // Navigate to raycast://confetti
   window.location.href = 'raycast://confetti';
   
-  console.log('Confetti triggered for PR:', prId);
+  console.log('Confetti triggered for:', cacheKey);
   
   // Stop monitoring after confetti is triggered
   if (observer) {
