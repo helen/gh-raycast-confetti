@@ -80,19 +80,33 @@ function triggerConfetti(prId) {
   triggeredPRs.add(prId);
   
   // Navigate to raycast://confetti
-  // We need to create a temporary link element and click it
-  const link = document.createElement('a');
-  link.href = 'raycast://confetti';
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  window.location.href = 'raycast://confetti';
   
   console.log('Confetti triggered for PR:', prId);
+  
+  // Stop monitoring after confetti is triggered
+  if (observer) {
+    observer.disconnect();
+  }
+  if (pollInterval) {
+    clearInterval(pollInterval);
+  }
 }
 
-// Initial check when the page loads
-setTimeout(checkCIStatus, 2000); // Wait 2 seconds for the page to fully load
+// Wait for the page to be ready before checking
+function initializeExtension() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(checkCIStatus, 1000);
+    });
+  } else {
+    // DOM is already ready
+    setTimeout(checkCIStatus, 1000);
+  }
+}
+
+// Initialize the extension
+initializeExtension();
 
 // Set up a MutationObserver to watch for changes in the DOM
 // This will catch CI status updates that happen after page load
@@ -117,4 +131,4 @@ if (targetNode) {
 }
 
 // Also check periodically in case mutations are missed
-setInterval(checkCIStatus, 10000); // Check every 10 seconds
+const pollInterval = setInterval(checkCIStatus, 10000); // Check every 10 seconds
