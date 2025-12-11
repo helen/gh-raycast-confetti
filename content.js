@@ -18,7 +18,7 @@ function getLatestCommitHash() {
     const commitLink = item.querySelector('a.commit-id, a[href*="/commit/"]');
     if (commitLink) {
       const href = commitLink.getAttribute('href');
-      const match = href?.match(/\/commit\/([a-f0-9]+)/);
+      const match = href?.match(/\/commit\/([a-fA-F0-9]+)/);
       if (match) {
         return match[1].substring(0, 7); // Use short hash
       }
@@ -31,7 +31,7 @@ function getLatestCommitHash() {
     const commitLink = branchInfo.querySelector('a[href*="/commit/"], .commit-ref');
     if (commitLink) {
       const href = commitLink.getAttribute('href');
-      const match = href?.match(/\/commit\/([a-f0-9]+)/);
+      const match = href?.match(/\/commit\/([a-fA-F0-9]+)/);
       if (match) {
         return match[1].substring(0, 7);
       }
