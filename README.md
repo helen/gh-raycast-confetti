@@ -9,7 +9,7 @@ A browser extension for Chrome and Firefox that automatically triggers Raycast c
 - 📍 Works on any GitHub pull request page
 - 🔄 Monitors for CI status changes in real-time
 - 🎯 Only triggers once per PR to avoid spam
-- 🦊 Available for both Chrome and Firefox
+- 🦊 Compatible with both Chrome and Firefox
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ A browser extension for Chrome and Firefox that automatically triggers Raycast c
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" (toggle in the top-right corner)
    - Click "Load unpacked"
-   - Select the `chrome` directory from this repository
+   - Select the `gh-raycast-confetti` directory
 
 3. **Verify installation**
    - You should see "GitHub PR Raycast Confetti" in your extensions list
@@ -47,7 +47,7 @@ A browser extension for Chrome and Firefox that automatically triggers Raycast c
 2. **Load the extension in Firefox**
    - Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
    - Click "Load Temporary Add-on..."
-   - Navigate to the `firefox` directory and select the `manifest.json` file
+   - Navigate to the repository directory and select the `manifest.json` file
 
 3. **Verify installation**
    - You should see "GitHub PR Raycast Confetti" in the temporary extensions list
@@ -81,45 +81,32 @@ The extension uses a content script that:
 - Check the browser console for debug messages
 
 **Extension not loading:**
-- Make sure all files are present in the correct directory (`chrome/` or `firefox/`)
+- Make sure all files are present (manifest.json, content.js, icons/)
 - Check for errors in `chrome://extensions/` (Chrome) or `about:debugging` (Firefox)
-- Verify you're using a compatible browser (Chromium-based for Chrome version, Firefox for Firefox version)
+- Verify you're using a compatible browser (Chromium-based or Firefox)
 
 ## Development
 
 The extension consists of:
-- `chrome/` - Chrome extension files
-  - `manifest.json` - Chrome extension configuration (Manifest V3)
-  - `content.js` - Content script that monitors GitHub PR pages
-  - `icons/` - Extension icons in multiple sizes
-- `firefox/` - Firefox extension files
-  - `manifest.json` - Firefox extension configuration (Manifest V3 with Firefox-specific settings)
-  - `content.js` - Content script that monitors GitHub PR pages
-  - `icons/` - Extension icons in multiple sizes
+- `manifest.json` - Extension configuration (Manifest V3, compatible with both Chrome and Firefox)
+- `content.js` - Content script that monitors GitHub PR pages
+- `icons/` - Extension icons in multiple sizes
+
+The manifest includes Firefox-specific settings (`browser_specific_settings`) which are ignored by Chrome, allowing the same files to work in both browsers.
 
 To modify the extension:
 
 **For Chrome:**
-1. Make your changes to the files in the `chrome/` directory
+1. Make your changes to the files
 2. Go to `chrome://extensions/`
 3. Click the refresh icon on the extension card
 4. Test on a GitHub PR page
 
 **For Firefox:**
-1. Make your changes to the files in the `firefox/` directory
+1. Make your changes to the files
 2. Go to `about:debugging#/runtime/this-firefox`
 3. Click "Reload" next to the extension
 4. Test on a GitHub PR page
-
-**Note:** Both versions share the same `content.js` logic. If you make changes to the content script, make sure to update both `chrome/content.js` and `firefox/content.js`. You can use the following command to keep them in sync:
-
-```bash
-# After editing chrome/content.js, sync to Firefox:
-cp chrome/content.js firefox/content.js
-
-# Or after editing firefox/content.js, sync to Chrome:
-cp firefox/content.js chrome/content.js
-```
 
 ## Privacy
 
