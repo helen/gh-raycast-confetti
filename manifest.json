@@ -3,6 +3,11 @@
   "name": "GitHub PR Raycast Confetti",
   "version": "1.0.0",
   "description": "Trigger Raycast confetti when your GitHub pull request passes CI checks",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "github-pr-raycast-confetti@helen.github.io"
+    }
+  },
   "permissions": [
     "tabs"
   ],
