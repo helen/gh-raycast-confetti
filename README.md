@@ -111,7 +111,15 @@ To modify the extension:
 3. Click "Reload" next to the extension
 4. Test on a GitHub PR page
 
-**Note:** Both versions share the same `content.js` logic. If you make changes to the content script, make sure to update both `chrome/content.js` and `firefox/content.js`.
+**Note:** Both versions share the same `content.js` logic. If you make changes to the content script, make sure to update both `chrome/content.js` and `firefox/content.js`. You can use the following command to keep them in sync:
+
+```bash
+# After editing chrome/content.js, sync to Firefox:
+cp chrome/content.js firefox/content.js
+
+# Or after editing firefox/content.js, sync to Chrome:
+cp firefox/content.js chrome/content.js
+```
 
 ## Privacy
 
