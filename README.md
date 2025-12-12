@@ -1,6 +1,6 @@
 # GitHub PR Raycast Confetti 🎉
 
-A Chrome browser extension that automatically triggers Raycast confetti when your GitHub pull request passes CI checks!
+A browser extension for Chrome and Firefox that automatically triggers Raycast confetti when your GitHub pull request passes CI checks!
 
 ## Features
 
@@ -9,13 +9,16 @@ A Chrome browser extension that automatically triggers Raycast confetti when you
 - 📍 Works on any GitHub pull request page
 - 🔄 Monitors for CI status changes in real-time
 - 🎯 Only triggers once per PR to avoid spam
+- 🦊 Available for both Chrome and Firefox
 
 ## Prerequisites
 
-- Google Chrome or Chromium-based browser
+- Google Chrome/Chromium-based browser OR Mozilla Firefox
 - [Raycast](https://raycast.com/) installed on macOS
 
 ## Installation
+
+### For Chrome/Chromium
 
 1. **Clone or download this repository**
    ```bash
@@ -27,11 +30,28 @@ A Chrome browser extension that automatically triggers Raycast confetti when you
    - Open Chrome and navigate to `chrome://extensions/`
    - Enable "Developer mode" (toggle in the top-right corner)
    - Click "Load unpacked"
-   - Select the `gh-raycast-confetti` directory
+   - Select the `chrome` directory from this repository
 
 3. **Verify installation**
    - You should see "GitHub PR Raycast Confetti" in your extensions list
    - The extension icon should appear in your extensions toolbar
+
+### For Firefox
+
+1. **Clone or download this repository**
+   ```bash
+   git clone https://github.com/helen/gh-raycast-confetti.git
+   cd gh-raycast-confetti
+   ```
+
+2. **Load the extension in Firefox**
+   - Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
+   - Click "Load Temporary Add-on..."
+   - Navigate to the `firefox` directory and select the `manifest.json` file
+
+3. **Verify installation**
+   - You should see "GitHub PR Raycast Confetti" in the temporary extensions list
+   - Note: Temporary extensions in Firefox are removed when you close the browser. For permanent installation, the extension would need to be signed and published to addons.mozilla.org
 
 ## Usage
 
@@ -61,22 +81,37 @@ The extension uses a content script that:
 - Check the browser console for debug messages
 
 **Extension not loading:**
-- Make sure all files are present (manifest.json, content.js, icons/)
-- Check for errors in `chrome://extensions/`
-- Verify you're using a Chromium-based browser
+- Make sure all files are present in the correct directory (`chrome/` or `firefox/`)
+- Check for errors in `chrome://extensions/` (Chrome) or `about:debugging` (Firefox)
+- Verify you're using a compatible browser (Chromium-based for Chrome version, Firefox for Firefox version)
 
 ## Development
 
 The extension consists of:
-- `manifest.json` - Chrome extension configuration (Manifest V3)
-- `content.js` - Content script that monitors GitHub PR pages
-- `icons/` - Extension icons in multiple sizes
+- `chrome/` - Chrome extension files
+  - `manifest.json` - Chrome extension configuration (Manifest V3)
+  - `content.js` - Content script that monitors GitHub PR pages
+  - `icons/` - Extension icons in multiple sizes
+- `firefox/` - Firefox extension files
+  - `manifest.json` - Firefox extension configuration (Manifest V3 with Firefox-specific settings)
+  - `content.js` - Content script that monitors GitHub PR pages
+  - `icons/` - Extension icons in multiple sizes
 
 To modify the extension:
-1. Make your changes to the files
+
+**For Chrome:**
+1. Make your changes to the files in the `chrome/` directory
 2. Go to `chrome://extensions/`
 3. Click the refresh icon on the extension card
 4. Test on a GitHub PR page
+
+**For Firefox:**
+1. Make your changes to the files in the `firefox/` directory
+2. Go to `about:debugging#/runtime/this-firefox`
+3. Click "Reload" next to the extension
+4. Test on a GitHub PR page
+
+**Note:** Both versions share the same `content.js` logic. If you make changes to the content script, make sure to update both `chrome/content.js` and `firefox/content.js`.
 
 ## Privacy
 
