@@ -175,14 +175,13 @@ async function triggerConfetti(cacheKey) {
   
   console.log('Confetti triggered for:', cacheKey);
   
-  // Stop monitoring after confetti is triggered
-  if (observer) {
-    observer.disconnect();
-  }
-  if (pollInterval) {
-    clearInterval(pollInterval);
-  }
+  // Note: The page will navigate away, so cleanup is not strictly necessary
+  // but we include it for completeness
 }
+
+// MutationObserver and poll interval (initialized in initializeExtension)
+let observer = null;
+let pollInterval = null;
 
 // Wait for the page to be ready before checking
 async function initializeExtension() {
@@ -197,32 +196,32 @@ async function initializeExtension() {
     // DOM is already ready
     setTimeout(checkCIStatus, 1000);
   }
+  
+  // Set up a MutationObserver to watch for changes in the DOM
+  // This will catch CI status updates that happen after page load
+  observer = new MutationObserver((mutations) => {
+    // Debounce the checks to avoid excessive calls
+    clearTimeout(observer.checkTimeout);
+    observer.checkTimeout = setTimeout(checkCIStatus, 500);
+  });
+  
+  // Observe the main content area for changes
+  const targetNode = document.querySelector('#partial-discussion-header') || 
+                     document.querySelector('.js-discussion') || 
+                     document.body;
+  
+  if (targetNode) {
+    observer.observe(targetNode, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'data-state']
+    });
+  }
+  
+  // Also check periodically in case mutations are missed
+  pollInterval = setInterval(checkCIStatus, 10000); // Check every 10 seconds
 }
 
 // Initialize the extension
 initializeExtension();
-
-// Set up a MutationObserver to watch for changes in the DOM
-// This will catch CI status updates that happen after page load
-const observer = new MutationObserver((mutations) => {
-  // Debounce the checks to avoid excessive calls
-  clearTimeout(observer.checkTimeout);
-  observer.checkTimeout = setTimeout(checkCIStatus, 500);
-});
-
-// Observe the main content area for changes
-const targetNode = document.querySelector('#partial-discussion-header') || 
-                   document.querySelector('.js-discussion') || 
-                   document.body;
-
-if (targetNode) {
-  observer.observe(targetNode, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'data-state']
-  });
-}
-
-// Also check periodically in case mutations are missed
-const pollInterval = setInterval(checkCIStatus, 10000); // Check every 10 seconds
