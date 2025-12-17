@@ -1,6 +1,38 @@
 // Track which PRs have already triggered confetti to avoid duplicates
 // Uses PR ID + latest commit hash to allow re-triggering on new pushes
-const triggeredPRs = new Set();
+// Stored in browser storage to persist across page reloads
+let triggeredPRs = new Set();
+
+// Storage key for persisting triggered PRs
+const STORAGE_KEY = 'triggeredPRs';
+
+// Cross-browser compatibility: Use browser.storage or chrome.storage
+const storageAPI = (typeof browser !== 'undefined' && browser.storage) ? browser.storage : chrome.storage;
+
+// Load triggered PRs from browser storage
+async function loadTriggeredPRs() {
+  try {
+    const result = await storageAPI.local.get([STORAGE_KEY]);
+    if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY])) {
+      triggeredPRs = new Set(result[STORAGE_KEY]);
+      console.log('Loaded triggered PRs from storage:', triggeredPRs.size, 'entries');
+    }
+  } catch (error) {
+    console.error('Failed to load triggered PRs from storage:', error);
+  }
+}
+
+// Save triggered PRs to browser storage
+async function saveTriggeredPRs() {
+  try {
+    const data = { [STORAGE_KEY]: Array.from(triggeredPRs) };
+    await storageAPI.local.set(data);
+    console.log('Saved triggered PRs to storage:', triggeredPRs.size, 'entries');
+  } catch (error) {
+    console.error('Failed to save triggered PRs to storage:', error);
+  }
+}
+
 
 // Get the current PR identifier
 function getCurrentPRId() {
@@ -129,11 +161,14 @@ function checkCIStatus() {
 }
 
 // Trigger Raycast confetti
-function triggerConfetti(cacheKey) {
+async function triggerConfetti(cacheKey) {
   console.log('🎉 CI checks passed! Triggering Raycast confetti...');
   
   // Mark this PR+commit as having triggered confetti
   triggeredPRs.add(cacheKey);
+  
+  // Save to storage
+  await saveTriggeredPRs();
   
   // Navigate to raycast://confetti
   window.location.href = 'raycast://confetti';
@@ -150,7 +185,10 @@ function triggerConfetti(cacheKey) {
 }
 
 // Wait for the page to be ready before checking
-function initializeExtension() {
+async function initializeExtension() {
+  // Load the cached triggered PRs from storage
+  await loadTriggeredPRs();
+  
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(checkCIStatus, 1000);
