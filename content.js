@@ -96,7 +96,7 @@ function getCacheKey() {
 }
 
 // Check if CI checks have passed
-function checkCIStatus() {
+async function checkCIStatus() {
   const cacheKey = getCacheKey();
   if (!cacheKey) return;
 
@@ -113,7 +113,7 @@ function checkCIStatus() {
     if (text.includes('All checks have passed') || 
         text.includes('checks passed') ||
         text.includes('successful checks')) {
-      triggerConfetti(cacheKey);
+      await triggerConfetti(cacheKey);
       return;
     }
   }
@@ -129,7 +129,7 @@ function checkCIStatus() {
       // Make sure there are no failures
       const failureIcon = statusSection.querySelector('[data-targets="animated-image.replacedImage"][alt="Failure"]');
       if (!failureIcon) {
-        triggerConfetti(cacheKey);
+        await triggerConfetti(cacheKey);
         return;
       }
     }
@@ -141,7 +141,7 @@ function checkCIStatus() {
     const statusIcon = branchActionItem.querySelector('.octicon-check, .color-fg-success');
     const statusText = branchActionItem.textContent;
     if (statusIcon && (statusText.includes('success') || statusText.includes('passed'))) {
-      triggerConfetti(cacheKey);
+      await triggerConfetti(cacheKey);
       return;
     }
   }
@@ -153,7 +153,7 @@ function checkCIStatus() {
     if (stateClean) {
       const text = stateClean.textContent;
       if (text.includes('checks') && (text.includes('passed') || text.includes('successful'))) {
-        triggerConfetti(cacheKey);
+        await triggerConfetti(cacheKey);
         return;
       }
     }
