@@ -97,66 +97,70 @@ function getCacheKey() {
 
 // Check if CI checks have passed
 async function checkCIStatus() {
-  const cacheKey = getCacheKey();
-  if (!cacheKey) return;
+  try {
+    const cacheKey = getCacheKey();
+    if (!cacheKey) return;
 
-  // If we've already triggered confetti for this PR+commit, don't do it again
-  if (triggeredPRs.has(cacheKey)) return;
+    // If we've already triggered confetti for this PR+commit, don't do it again
+    if (triggeredPRs.has(cacheKey)) return;
 
-  // Look for the merge status section on GitHub
-  // GitHub shows CI status in different ways, we'll check for common patterns
-  
-  // Method 1: Check for "All checks have passed" message
-  const successMessages = document.querySelectorAll('.merge-message, .merge-status-item');
-  for (const message of successMessages) {
-    const text = message.textContent.trim();
-    if (text.includes('All checks have passed') || 
-        text.includes('checks passed') ||
-        text.includes('successful checks')) {
-      await triggerConfetti(cacheKey);
-      return;
-    }
-  }
-
-  // Method 2: Check the status checks section
-  const statusSection = document.querySelector('.merge-status-list');
-  if (statusSection) {
-    // Look for success indicators
-    const successIcon = statusSection.querySelector('[data-targets="animated-image.replacedImage"][alt="Success"]');
-    const allChecksComplete = statusSection.querySelector('.completeness-indicator-success');
+    // Look for the merge status section on GitHub
+    // GitHub shows CI status in different ways, we'll check for common patterns
     
-    if (successIcon || allChecksComplete) {
-      // Make sure there are no failures
-      const failureIcon = statusSection.querySelector('[data-targets="animated-image.replacedImage"][alt="Failure"]');
-      if (!failureIcon) {
+    // Method 1: Check for "All checks have passed" message
+    const successMessages = document.querySelectorAll('.merge-message, .merge-status-item');
+    for (const message of successMessages) {
+      const text = message.textContent.trim();
+      if (text.includes('All checks have passed') || 
+          text.includes('checks passed') ||
+          text.includes('successful checks')) {
         await triggerConfetti(cacheKey);
         return;
       }
     }
-  }
 
-  // Method 3: Check for the branch status badge showing "success"
-  const branchActionItem = document.querySelector('.branch-action-item');
-  if (branchActionItem) {
-    const statusIcon = branchActionItem.querySelector('.octicon-check, .color-fg-success');
-    const statusText = branchActionItem.textContent;
-    if (statusIcon && (statusText.includes('success') || statusText.includes('passed'))) {
-      await triggerConfetti(cacheKey);
-      return;
+    // Method 2: Check the status checks section
+    const statusSection = document.querySelector('.merge-status-list');
+    if (statusSection) {
+      // Look for success indicators
+      const successIcon = statusSection.querySelector('[data-targets="animated-image.replacedImage"][alt="Success"]');
+      const allChecksComplete = statusSection.querySelector('.completeness-indicator-success');
+      
+      if (successIcon || allChecksComplete) {
+        // Make sure there are no failures
+        const failureIcon = statusSection.querySelector('[data-targets="animated-image.replacedImage"][alt="Failure"]');
+        if (!failureIcon) {
+          await triggerConfetti(cacheKey);
+          return;
+        }
+      }
     }
-  }
 
-  // Method 4: Check the CI status summary at the bottom of the PR
-  const mergeBox = document.querySelector('.merge-pr');
-  if (mergeBox) {
-    const stateClean = mergeBox.querySelector('.state-clean');
-    if (stateClean) {
-      const text = stateClean.textContent;
-      if (text.includes('checks') && (text.includes('passed') || text.includes('successful'))) {
+    // Method 3: Check for the branch status badge showing "success"
+    const branchActionItem = document.querySelector('.branch-action-item');
+    if (branchActionItem) {
+      const statusIcon = branchActionItem.querySelector('.octicon-check, .color-fg-success');
+      const statusText = branchActionItem.textContent;
+      if (statusIcon && (statusText.includes('success') || statusText.includes('passed'))) {
         await triggerConfetti(cacheKey);
         return;
       }
     }
+
+    // Method 4: Check the CI status summary at the bottom of the PR
+    const mergeBox = document.querySelector('.merge-pr');
+    if (mergeBox) {
+      const stateClean = mergeBox.querySelector('.state-clean');
+      if (stateClean) {
+        const text = stateClean.textContent;
+        if (text.includes('checks') && (text.includes('passed') || text.includes('successful'))) {
+          await triggerConfetti(cacheKey);
+          return;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking CI status:', error);
   }
 }
 
