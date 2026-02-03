@@ -122,7 +122,7 @@ See [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests.
+Contributions are welcome! Feel free to open issues or submit pull requests. There is no purposeful roadmap at this time.
 
 ## Acknowledgments
 
